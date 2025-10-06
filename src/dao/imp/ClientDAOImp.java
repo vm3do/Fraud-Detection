@@ -8,6 +8,7 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -25,7 +26,7 @@ public class ClientDAOImp implements ClientDAO {
             stmt.executeUpdate();
             return true;
         } catch (SQLException e) {
-            System.out.println(e.getMessage());;
+            System.out.println(e.getMessage());
         }
         return false;
     }
@@ -46,31 +47,39 @@ public class ClientDAOImp implements ClientDAO {
         return findByField("phone", phone);
     }
 
-    public List<Client> findAll(){
+
+    public List<Client> findAll() {
         String sql = "SELECT * FROM clients";
-        try{
-
-        } catch {
-
-        }
-    }
-
-
-
-
-    private Optional<Client> findByField(String field, String value) {
-        String sql = "SELECT * FROM clients WHERE " + field + " = ?";
-        try {
-            PreparedStatement stmt = connection.prepareStatement(sql);
-            stmt.setString(1, value);
-            ResultSet result = stmt.executeQuery();
-            if (result.next()) {
+        List<Client> clients = new ArrayList<>();
+        try (PreparedStatement stmt = connection.prepareStatement(sql);
+             ResultSet result = stmt.executeQuery()) {
+            while (result.next()) {
                 Client client = new Client(
-                        result.getInt("id"),
                         result.getString("name"),
                         result.getString("email"),
                         result.getString("phone")
                 );
+                client.setId(result.getInt("id"));
+                clients.add(client);
+            }
+        } catch (SQLException e) {
+            System.out.println("Error fetching all clients: " + e.getMessage());
+        }
+        return clients;
+    }
+
+    private Optional<Client> findByField(String field, String value) {
+        String sql = "SELECT * FROM clients WHERE " + field + " = ?";
+        try(PreparedStatement stmt = connection.prepareStatement(sql)) {
+            stmt.setString(1, value);
+            ResultSet result = stmt.executeQuery();
+            if (result.next()) {
+                Client client = new Client(
+                        result.getString("name"),
+                        result.getString("email"),
+                        result.getString("phone")
+                );
+                client.setId(result.getInt("id"));
                 return Optional.of(client);
             }
         } catch (SQLException e) {
@@ -87,11 +96,11 @@ public class ClientDAOImp implements ClientDAO {
             ResultSet result = stmt.executeQuery();
             if (result.next()) {
                 Client client = new Client(
-                        result.getInt("id"),
                         result.getString("name"),
                         result.getString("email"),
                         result.getString("phone")
                 );
+                client.setId(result.getInt("id"));
                 return Optional.of(client);
             }
         } catch (SQLException e) {
@@ -100,7 +109,4 @@ public class ClientDAOImp implements ClientDAO {
         }
         return Optional.empty();
     }
-
-
-
 }

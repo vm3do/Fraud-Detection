@@ -13,9 +13,9 @@ public class DBConnection {
 
         private DBConnection() {
             try{
-                String URL = "jdbc:mysql://127.0.0.1:3306/fraude_detection";
+                String URL = "jdbc:mysql://127.0.0.1:3306/fraud_detection";
                 String USERNAME = "root";
-                String PASSWORD = "root";
+                String PASSWORD = "NewPass123!";
 
                 connection = DriverManager.getConnection(URL, USERNAME, PASSWORD);
 

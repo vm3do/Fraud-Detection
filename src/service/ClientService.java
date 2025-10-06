@@ -25,7 +25,9 @@ public class ClientService {
             return false;
         }
 
-        clientDAO.save(client);
+        if(clientDAO.save(client)){
+            System.out.println("client has been added");
+        }
         return true;
     }
 }

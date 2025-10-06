@@ -16,13 +16,13 @@ public class ClientDAOImp implements ClientDAO {
 
     private final Connection connection = DBConnection.getInstance().getConnection();
 
-    public boolean save(Client client){
+    public boolean save(Client client) {
         String sql = "INSERT INTO clients (name, email, phone) VALUES (?, ?, ?)";
-        try{
+        try {
             PreparedStatement stmt = connection.prepareStatement(sql);
-            stmt.setString(1, client.getName());
-            stmt.setString(2, client.getEmail());
-            stmt.setString(3, client.getPhone());
+            stmt.setString(1, client.name());
+            stmt.setString(2, client.email());
+            stmt.setString(3, client.phone());
             stmt.executeUpdate();
             return true;
         } catch (SQLException e) {
@@ -31,35 +31,33 @@ public class ClientDAOImp implements ClientDAO {
         return false;
     }
 
-    public Optional<Client> findById(int id){
+    public Optional<Client> findById(int id) {
         return findByField("id", id);
     }
 
-    public Optional<Client> findByName(String name){
+    public Optional<Client> findByName(String name) {
         return findByField("name", name);
     }
 
-    public Optional<Client> findByEmail(String email){
+    public Optional<Client> findByEmail(String email) {
         return findByField("email", email);
     }
 
-    public Optional<Client> findByPhone(String phone){
+    public Optional<Client> findByPhone(String phone) {
         return findByField("phone", phone);
     }
-
 
     public List<Client> findAll() {
         String sql = "SELECT * FROM clients";
         List<Client> clients = new ArrayList<>();
         try (PreparedStatement stmt = connection.prepareStatement(sql);
-             ResultSet result = stmt.executeQuery()) {
+                ResultSet result = stmt.executeQuery()) {
             while (result.next()) {
                 Client client = new Client(
+                        result.getInt("id"),
                         result.getString("name"),
                         result.getString("email"),
-                        result.getString("phone")
-                );
-                client.setId(result.getInt("id"));
+                        result.getString("phone"));
                 clients.add(client);
             }
         } catch (SQLException e) {
@@ -70,16 +68,15 @@ public class ClientDAOImp implements ClientDAO {
 
     private Optional<Client> findByField(String field, String value) {
         String sql = "SELECT * FROM clients WHERE " + field + " = ?";
-        try(PreparedStatement stmt = connection.prepareStatement(sql)) {
+        try (PreparedStatement stmt = connection.prepareStatement(sql)) {
             stmt.setString(1, value);
             ResultSet result = stmt.executeQuery();
             if (result.next()) {
                 Client client = new Client(
+                        result.getInt("id"),
                         result.getString("name"),
                         result.getString("email"),
-                        result.getString("phone")
-                );
-                client.setId(result.getInt("id"));
+                        result.getString("phone"));
                 return Optional.of(client);
             }
         } catch (SQLException e) {
@@ -96,11 +93,10 @@ public class ClientDAOImp implements ClientDAO {
             ResultSet result = stmt.executeQuery();
             if (result.next()) {
                 Client client = new Client(
+                        result.getInt("id"),
                         result.getString("name"),
                         result.getString("email"),
-                        result.getString("phone")
-                );
-                client.setId(result.getInt("id"));
+                        result.getString("phone"));
                 return Optional.of(client);
             }
         } catch (SQLException e) {

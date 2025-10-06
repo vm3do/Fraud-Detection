@@ -8,26 +8,27 @@ public class ClientService {
 
     private final ClientDAO clientDAO = new ClientDAOImp();
 
-    public boolean addClient(Client client){
+    public void addClient(Client client){
 
-        if(clientDAO.findByEmail(client.getEmail()).isPresent()){
+        if(clientDAO.findByEmail(client.email()).isPresent()){
             System.out.println("email already exist");
-            return false;
+            return;
         }
 
-        if(client.getName() == null || client.getName().length() < 2){
+        if(client.name() == null || client.name().length() < 2){
             System.out.println("enter a valid name");
-            return false;
+            return;
         }
 
-        if(client.getEmail() == null || !client.getEmail().contains("@")){
+        if(client.email() == null || !client.email().contains("@")){
             System.out.println("enter a valid email");
-            return false;
+            return;
         }
 
         if(clientDAO.save(client)){
             System.out.println("client has been added");
+        } else {
+            System.out.println("error while saving, please try again");
         }
-        return true;
     }
 }

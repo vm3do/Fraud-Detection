@@ -1,14 +1,18 @@
 package ui;
 
+import entity.CardStatus;
 import entity.Client;
 import service.ClientService;
+import service.CardService;
 
+import java.math.BigDecimal;
 import java.util.Optional;
 import java.util.Scanner;
 
 public class Menu {
 
     ClientService clientService = new ClientService();
+    CardService cardService = new CardService();
     private Scanner scanner = new Scanner(System.in);
 
     public void run() {
@@ -44,8 +48,7 @@ public class Menu {
                     break;
 
                 case 4:
-                    System.out.println("\n--- Issue a Card ---");
-                    System.out.println("Feature coming soon...");
+                    issueCard();
                     break;
 
                 case 5:
@@ -54,8 +57,7 @@ public class Menu {
                     break;
 
                 case 6:
-                    System.out.println("\n--- View Card History ---");
-                    System.out.println("Feature coming soon...");
+                    viewCardHistory();
                     break;
 
                 case 7:
@@ -64,8 +66,7 @@ public class Menu {
                     break;
 
                 case 8:
-                    System.out.println("\n--- Block/Suspend a Card ---");
-                    System.out.println("Feature coming soon...");
+                    blockOrSuspendCard();
                     break;
 
                 case 0:
@@ -135,6 +136,89 @@ public class Menu {
             clientService.displayClient(foundClient.get());
         } else {
             System.out.println("✗ Client not found.");
+        }
+    }
+
+    private void issueCard() {
+        System.out.println("\n--- Issue a Card ---");
+        System.out.print("Enter Client ID: ");
+        int clientId = scanner.nextInt();
+        scanner.nextLine();
+
+        System.out.println("\nSelect Card Type:");
+        System.out.println("1. Debit Card");
+        System.out.println("2. Credit Card");
+        System.out.println("3. Prepaid Card");
+        System.out.print("Choose card type: ");
+
+        int cardType = scanner.nextInt();
+        scanner.nextLine();
+
+        switch (cardType) {
+            case 1:
+                System.out.print("Enter daily limit: $");
+                BigDecimal dailyLimit = scanner.nextBigDecimal();
+                scanner.nextLine();
+                cardService.issueDebitCard(clientId, dailyLimit);
+                break;
+
+            case 2:
+                System.out.print("Enter monthly limit: $");
+                BigDecimal monthlyLimit = scanner.nextBigDecimal();
+                scanner.nextLine();
+                System.out.print("Enter interest rate (%): ");
+                BigDecimal interestRate = scanner.nextBigDecimal();
+                scanner.nextLine();
+                cardService.issueCreditCard(clientId, monthlyLimit, interestRate);
+                break;
+
+            case 3:
+                System.out.print("Enter initial balance: $");
+                BigDecimal initialBalance = scanner.nextBigDecimal();
+                scanner.nextLine();
+                cardService.issuePrepaidCard(clientId, initialBalance);
+                break;
+
+            default:
+                System.out.println("Invalid card type.");
+        }
+    }
+
+    private void viewCardHistory() {
+        System.out.println("\n--- View Card History ---");
+        System.out.print("Enter Client ID: ");
+        int clientId = scanner.nextInt();
+        scanner.nextLine();
+
+        cardService.displayClientCards(clientId);
+    }
+
+    private void blockOrSuspendCard() {
+        System.out.println("\n--- Block/Suspend a Card ---");
+        System.out.print("Enter Card ID: ");
+        int cardId = scanner.nextInt();
+        scanner.nextLine();
+
+        System.out.println("\nSelect action:");
+        System.out.println("1. Block Card");
+        System.out.println("2. Suspend Card");
+        System.out.println("3. Activate Card");
+        System.out.print("Choose action: ");
+
+        int action = scanner.nextInt();
+        scanner.nextLine();
+
+        CardStatus newStatus = switch (action) {
+            case 1 -> CardStatus.BLOCKED;
+            case 2 -> CardStatus.SUSPENDED;
+            case 3 -> CardStatus.ACTIVE;
+            default -> null;
+        };
+
+        if (newStatus != null) {
+            cardService.changeCardStatus(cardId, newStatus);
+        } else {
+            System.out.println("Invalid action.");
         }
     }
 }

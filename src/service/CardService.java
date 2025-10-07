@@ -1,17 +1,21 @@
 package service;
 
 import dao.CardDAO;
+import dao.ClientDAO;
 import dao.imp.CardDAOImp;
+import dao.imp.ClientDAOImp;
 import entity.*;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Optional;
 import java.util.Random;
 
 public class CardService {
 
     private final CardDAO cardDAO = new CardDAOImp();
+    private final ClientDAO clientDAO = new ClientDAOImp();
     private final Random random = new Random();
 
     public String generateCardNumber(CardType type) {
@@ -36,6 +40,10 @@ public class CardService {
     }
 
     public void issueDebitCard(int clientId, BigDecimal dailyLimit) {
+        if (!validateClient(clientId)) {
+            return;
+        }
+
         String cardNumber = generateCardNumber(CardType.DEBIT);
         LocalDate expirationDate = LocalDate.now().plusYears(3);
 
@@ -52,6 +60,10 @@ public class CardService {
     }
 
     public void issueCreditCard(int clientId, BigDecimal monthlyLimit, BigDecimal interestRate) {
+        if (!validateClient(clientId)) {
+            return;
+        }
+
         String cardNumber = generateCardNumber(CardType.CREDIT);
         LocalDate expirationDate = LocalDate.now().plusYears(3);
 
@@ -70,6 +82,10 @@ public class CardService {
     }
 
     public void issuePrepaidCard(int clientId, BigDecimal initialBalance) {
+        if (!validateClient(clientId)) {
+            return;
+        }
+
         String cardNumber = generateCardNumber(CardType.PREPAID);
         LocalDate expirationDate = LocalDate.now().plusYears(3);
 
@@ -85,28 +101,33 @@ public class CardService {
         }
     }
 
-    public void blockCard(int cardId) {
-        if (cardDAO.updateStatus(cardId, CardStatus.BLOCKED)) {
-            System.out.println("Card blocked successfully.");
+    public void changeCardStatus(int cardId, CardStatus newStatus) {
+        Optional<Card> card = cardDAO.findById(cardId);
+
+        if (card.isEmpty()) {
+            System.out.println("Card not found.");
+            return;
+        }
+
+        if (cardDAO.updateStatus(cardId, newStatus)) {
+            String action = switch (newStatus) {
+                case BLOCKED -> "blocked";
+                case SUSPENDED -> "suspended";
+                case ACTIVE -> "activated";
+            };
+            System.out.println("Card " + action + " successfully.");
         } else {
-            System.out.println("Error blocking card.");
+            System.out.println("Error updating card status.");
         }
     }
 
-    public void suspendCard(int cardId) {
-        if (cardDAO.updateStatus(cardId, CardStatus.SUSPENDED)) {
-            System.out.println("Card suspended successfully.");
-        } else {
-            System.out.println("Error suspending card.");
+    private boolean validateClient(int clientId) {
+        Optional<Client> client = clientDAO.findById(clientId);
+        if (client.isEmpty()) {
+            System.out.println("Client not found.");
+            return false;
         }
-    }
-
-    public void activateCard(int cardId) {
-        if (cardDAO.updateStatus(cardId, CardStatus.ACTIVE)) {
-            System.out.println("Card activated successfully.");
-        } else {
-            System.out.println("Error activating card.");
-        }
+        return true;
     }
 
     public List<Card> getClientCards(int clientId) {

@@ -16,6 +16,7 @@ public class ClientDAOImp implements ClientDAO {
 
     private final Connection connection = DBConnection.getInstance().getConnection();
 
+    @Override
     public boolean save(Client client) {
         String sql = "INSERT INTO clients (name, email, phone) VALUES (?, ?, ?)";
         try {
@@ -31,22 +32,17 @@ public class ClientDAOImp implements ClientDAO {
         return false;
     }
 
+    @Override
     public Optional<Client> findById(int id) {
         return findByField("id", id);
     }
 
-    public Optional<Client> findByName(String name) {
-        return findByField("name", name);
-    }
-
+    @Override
     public Optional<Client> findByEmail(String email) {
         return findByField("email", email);
     }
 
-    public Optional<Client> findByPhone(String phone) {
-        return findByField("phone", phone);
-    }
-
+    @Override
     public List<Client> findAll() {
         String sql = "SELECT * FROM clients";
         List<Client> clients = new ArrayList<>();

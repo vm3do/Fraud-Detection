@@ -2,8 +2,10 @@ package ui;
 
 import entity.CardStatus;
 import entity.Client;
+import entity.OperationType;
 import service.ClientService;
 import service.CardService;
+import service.OperationService;
 
 import java.math.BigDecimal;
 import java.util.Optional;
@@ -13,6 +15,7 @@ public class Menu {
 
     ClientService clientService = new ClientService();
     CardService cardService = new CardService();
+    OperationService operationService = new OperationService();
     private Scanner scanner = new Scanner(System.in);
 
     public void run() {
@@ -52,8 +55,7 @@ public class Menu {
                     break;
 
                 case 5:
-                    System.out.println("\n--- Perform an Operation ---");
-                    System.out.println("Feature coming soon...");
+                    performOperation();
                     break;
 
                 case 6:
@@ -186,11 +188,48 @@ public class Menu {
 
     private void viewCardHistory() {
         System.out.println("\n--- View Card History ---");
-        System.out.print("Enter Client ID: ");
-        int clientId = scanner.nextInt();
+        System.out.print("Enter Card ID: ");
+        int cardId = scanner.nextInt();
         scanner.nextLine();
 
-        cardService.displayClientCards(clientId);
+        operationService.displayCardOperations(cardId);
+    }
+
+    private void performOperation() {
+        System.out.println("\n--- Perform an Operation ---");
+        System.out.print("Enter Card ID: ");
+        int cardId = scanner.nextInt();
+        scanner.nextLine();
+
+        System.out.println("\nSelect Operation Type:");
+        System.out.println("1. Purchase");
+        System.out.println("2. Withdrawal");
+        System.out.println("3. Online Payment");
+        System.out.print("Choose type: ");
+
+        int typeChoice = scanner.nextInt();
+        scanner.nextLine();
+
+        OperationType operationType = switch (typeChoice) {
+            case 1 -> OperationType.PURCHASE;
+            case 2 -> OperationType.WITHDRAWAL;
+            case 3 -> OperationType.ONLINEPAYMENT;
+            default -> null;
+        };
+
+        if (operationType == null) {
+            System.out.println("Invalid operation type.");
+            return;
+        }
+
+        System.out.print("Enter amount: $");
+        BigDecimal amount = scanner.nextBigDecimal();
+        scanner.nextLine();
+
+        System.out.print("Enter location: ");
+        String location = scanner.nextLine();
+
+        operationService.performOperation(cardId, operationType, amount, location);
     }
 
     private void blockOrSuspendCard() {

@@ -5,6 +5,7 @@ import dao.OperationDAO;
 import entity.OperationCarte;
 import entity.OperationType;
 
+import java.math.BigDecimal;
 import java.sql.*;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -120,6 +121,60 @@ public class OperationDAOImp implements OperationDAO {
             System.out.println("Error fetching all operations: " + e.getMessage());
         }
         return operations;
+    }
+
+    @Override
+    public Optional<OperationCarte> findLastOperationByCardId(int cardId) {
+        String sql = "SELECT * FROM CardOperation WHERE cardId = ? ORDER BY operationDate DESC LIMIT 1";
+
+        try (PreparedStatement stmt = connection.prepareStatement(sql)) {
+            stmt.setInt(1, cardId);
+            ResultSet result = stmt.executeQuery();
+
+            if (result.next()) {
+                return Optional.of(mapResultSetToOperation(result));
+            }
+        } catch (SQLException e) {
+            System.out.println("Error fetching last operation: " + e.getMessage());
+        }
+        return Optional.empty();
+    }
+
+    @Override
+    public int countRecentOperationsByCardId(int cardId, LocalDateTime since) {
+        String sql = "SELECT COUNT(*) FROM CardOperation WHERE cardId = ? AND operationDate >= ?";
+
+        try (PreparedStatement stmt = connection.prepareStatement(sql)) {
+            stmt.setInt(1, cardId);
+            stmt.setTimestamp(2, Timestamp.valueOf(since));
+            ResultSet result = stmt.executeQuery();
+
+            if (result.next()) {
+                return result.getInt(1);
+            }
+        } catch (SQLException e) {
+            System.out.println("Error counting recent operations: " + e.getMessage());
+        }
+        return 0;
+    }
+
+    @Override
+    public BigDecimal calculateTotalAmountByCardId(int cardId, LocalDateTime since) {
+        String sql = "SELECT SUM(amount) FROM CardOperation WHERE cardId = ? AND operationDate >= ?";
+
+        try (PreparedStatement stmt = connection.prepareStatement(sql)) {
+            stmt.setInt(1, cardId);
+            stmt.setTimestamp(2, Timestamp.valueOf(since));
+            ResultSet result = stmt.executeQuery();
+
+            if (result.next()) {
+                BigDecimal total = result.getBigDecimal(1);
+                return total != null ? total : BigDecimal.ZERO;
+            }
+        } catch (SQLException e) {
+            System.out.println("Error calculating total amount: " + e.getMessage());
+        }
+        return BigDecimal.ZERO;
     }
 
     private OperationCarte mapResultSetToOperation(ResultSet result) throws SQLException {

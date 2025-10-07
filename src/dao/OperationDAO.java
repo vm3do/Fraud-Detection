@@ -3,6 +3,7 @@ package dao;
 import entity.OperationCarte;
 import entity.OperationType;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
@@ -20,4 +21,10 @@ public interface OperationDAO {
     List<OperationCarte> findByDateRange(LocalDateTime startDate, LocalDateTime endDate);
 
     List<OperationCarte> findAll();
+    
+    Optional<OperationCarte> findLastOperationByCardId(int cardId);
+    
+    int countRecentOperationsByCardId(int cardId, LocalDateTime since);
+    
+    BigDecimal calculateTotalAmountByCardId(int cardId, LocalDateTime since);
 }

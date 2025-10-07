@@ -1,13 +1,17 @@
 package ui;
 
+import entity.AlertLevel;
 import entity.CardStatus;
 import entity.Client;
+import entity.FraudAlert;
 import entity.OperationType;
 import service.ClientService;
 import service.CardService;
+import service.FraudService;
 import service.OperationService;
 
 import java.math.BigDecimal;
+import java.util.List;
 import java.util.Optional;
 import java.util.Scanner;
 
@@ -16,6 +20,7 @@ public class Menu {
     ClientService clientService = new ClientService();
     CardService cardService = new CardService();
     OperationService operationService = new OperationService();
+    FraudService fraudService = new FraudService();
     private Scanner scanner = new Scanner(System.in);
 
     public void run() {
@@ -63,8 +68,7 @@ public class Menu {
                     break;
 
                 case 7:
-                    System.out.println("\n--- Launch Fraud Analysis ---");
-                    System.out.println("Feature coming soon...");
+                    launchFraudAnalysis();
                     break;
 
                 case 8:
@@ -259,5 +263,32 @@ public class Menu {
         } else {
             System.out.println("Invalid action.");
         }
+    }
+
+    private void launchFraudAnalysis() {
+        System.out.println("\n--- Fraud Analysis ---");
+        System.out.println("1. View All Alerts");
+        System.out.println("2. View Critical Alerts");
+        System.out.println("3. View Warning Alerts");
+        System.out.println("4. View Info Alerts");
+        System.out.println("5. View Recent Alerts (Last 10)");
+        System.out.print("Choose an option: ");
+
+        int option = scanner.nextInt();
+        scanner.nextLine();
+
+        List<FraudAlert> alerts = switch (option) {
+            case 1 -> fraudService.getAllAlerts();
+            case 2 -> fraudService.getAlertsByLevel(AlertLevel.CRITICAL);
+            case 3 -> fraudService.getAlertsByLevel(AlertLevel.WARNING);
+            case 4 -> fraudService.getAlertsByLevel(AlertLevel.INFO);
+            case 5 -> fraudService.getRecentAlerts(10);
+            default -> {
+                System.out.println("Invalid option.");
+                yield List.of();
+            }
+        };
+
+        fraudService.displayAlerts(alerts);
     }
 }

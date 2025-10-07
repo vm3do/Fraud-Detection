@@ -16,6 +16,7 @@ public class OperationService {
 
     private final OperationDAO operationDAO = new OperationDAOImp();
     private final CardDAO cardDAO = new CardDAOImp();
+    private final FraudService fraudService = new FraudService();
 
     public void performOperation(int cardId, OperationType type, BigDecimal amount, String location) {
         Optional<Card> cardOpt = cardDAO.findById(cardId);
@@ -50,6 +51,8 @@ public class OperationService {
             System.out.println("Amount: $" + amount);
             System.out.println("Location: " + location);
             System.out.println("Date: " + operation.operationDate());
+            
+            fraudService.analyzeOperation(operation);
         } else {
             System.out.println("Error performing operation. Please try again.");
         }
